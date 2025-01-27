@@ -22,40 +22,40 @@ contract BLSSignatureVerifier {
      * @param sig The BLS signature
      * @param pubkey The BLS public key of the expected signer
      */
-    function _verifySignature(
-        bytes memory message,
-        BLS12381.G2Point memory sig,
-        BLS12381.G1Point memory pubkey
-    ) internal view returns (bool) {
-        // Hash the message bytes into a G2 point
-        BLS12381.G2Point memory msgG2 = message.hashToCurveG2(dst());
+    // function _verifySignature(
+    //     bytes memory message,
+    //     BLS12381.G2Point memory sig,
+    //     BLS12381.G1Point memory pubkey
+    // ) internal view returns (bool) {
+    //     // Hash the message bytes into a G2 point
+    //     BLS12381.G2Point memory msgG2 = message.hashToCurveG2(dst());
 
-        // Return the pairing check result
-        return BLS12381.pairing(BLS12381.generatorG1().negate(), sig, pubkey, msgG2);
-    }
+    //     // Return the pairing check result
+    //     return BLS12381.pairing(BLS12381.generatorG1().negate(), sig, pubkey, msgG2);
+    // }
 
     /**
      * @notice Aggregate a list of BLS public keys into a single BLS public key
      * @param pubkeys The list of BLS public keys to aggregate
      * @return The aggregated BLS public key
      */
-    function _aggregatePubkeys(
-        BLS12381.G1Point[] calldata pubkeys
-    ) internal pure returns (BLS12381.G1Point memory) {
-        // TODO: implement + test.
+    // function _aggregatePubkeys(
+    //     BLS12381.G1Point[] calldata pubkeys
+    // ) internal pure returns (BLS12381.G1Point memory) {
+    //     // TODO: implement + test.
 
-        // Simply adding pubkeys will result in a rogue key vulnerability.
-        //
-        // https://xn--2-umb.com/22/bls-signatures/#rogue-key-attack
-        // https://github.com/chronicleprotocol/scribe/blob/main/docs/Schnorr.md#key-aggregation-for-multisignatures
+    //     // Simply adding pubkeys will result in a rogue key vulnerability.
+    //     //
+    //     // https://xn--2-umb.com/22/bls-signatures/#rogue-key-attack
+    //     // https://github.com/chronicleprotocol/scribe/blob/main/docs/Schnorr.md#key-aggregation-for-multisignatures
 
-        uint256[2] memory aggPubkeyZero = [uint256(0), uint256(0)];
-        BLS12381.G1Point memory aggPubkey = BLS12381.G1Point(aggPubkeyZero, aggPubkeyZero);
+    //     uint256[2] memory aggPubkeyZero = [uint256(0), uint256(0)];
+    //     BLS12381.G1Point memory aggPubkey = BLS12381.G1Point(aggPubkeyZero, aggPubkeyZero);
 
-        // unimplemented!()
-        // silence compiler warnings
-        pubkeys;
+    //     // unimplemented!()
+    //     // silence compiler warnings
+    //     pubkeys;
 
-        return aggPubkey;
-    }
+    //     return aggPubkey;
+    // }
 }

@@ -12,6 +12,7 @@ solc_version = "0.8.25"
 
 remappings = [
   "@openzeppelin-contracts/=lib/openzeppelin-contracts/contracts/",
+   "@symbiotic/=lib/core/src/",
   "@openzeppelin/contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/contracts/",
   "@openzeppelin-foundry-upgrades/=lib/openzeppelin-foundry-upgrades/",
   "@eigenlayer/=lib/eigenlayer-contracts/",

@@ -29,6 +29,30 @@ contract Restaking is IConsensusRestaking, UUPSUpgradeable, OwnableUpgradeable {
 
     uint256[41] private __gap;
 
+function initialize(
+        address _owner,
+        address _parameters,
+        address _eigenlayerAVSDirectory,
+        address _eigenlayerDelegationManager,
+        address _eigenlayerStrategyManager,
+        address _restakingHelper
+    ) public initializer {
+        __Ownable_init(_owner);
+
+        // Set the RestakingHelper instance
+        restakingHelper = RestakingHelper(_restakingHelper);
+        
+        // Initialize the RestakingHelper
+        RestakingHelper(_restakingHelper).initialize(
+            _owner,
+            _parameters,
+            _eigenlayerAVSDirectory,
+            _eigenlayerDelegationManager,
+            _eigenlayerStrategyManager
+        );
+    }
+
+
     function _authorizeUpgrade(
         address newImplementation
     ) internal override onlyOwner {}
@@ -262,4 +286,10 @@ contract Restaking is IConsensusRestaking, UUPSUpgradeable, OwnableUpgradeable {
     function avsDirectory() external view returns (address) {
         return address(restakingHelper._avsDirector());
     }
+
+ function deregisterOperatorFromAVS(address operator) public {
+ 
+       restakingHelper.deregisterOperatorFromAVS(operator);
+ }
+
 }

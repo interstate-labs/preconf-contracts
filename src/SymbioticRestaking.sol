@@ -20,6 +20,8 @@ import {IConsensusRestaking} from "./interfaces/IRestaking.sol";
 import {IParameters} from "./interfaces/IParameters.sol";
 import {MapWithTimeData} from "./library/MapWithTimeData.sol";
 
+
+
 contract SymbioticRestaking is
     IConsensusRestaking,
     OwnableUpgradeable,
@@ -55,10 +57,9 @@ contract SymbioticRestaking is
     uint256[38] private __gap;
 
     event TransactionVerified(
-        bytes indexed validatorPubkey,
+        string indexed validatorPubkey,
         uint256 indexed blockNumber,
-        bytes32 indexed txId,
-        bool included
+        bytes32 indexed txId
     );
 
     error NotVault();
@@ -67,7 +68,7 @@ contract SymbioticRestaking is
     error OperatorNotOptedIn();
 
     struct SlashRequest {
-        bytes validatorPubkey;
+        string validatorPubkey;
         uint256 blockNumber;
         bytes32 txId;
         bool verified;
@@ -271,11 +272,16 @@ contract SymbioticRestaking is
     }
 
     function slash(
-        bytes calldata validatorPubkey,
+        string calldata validatorPubkey,
         uint256 blockNumber,
-        bytes32 txId,
-        bool isIncluded
+        bytes32 txId
     ) external onlyOwner {
+
+    require(blockNumber > 0, "Invalid block number");
+    require(txId != bytes32(0), "Invalid transaction ID");
+
+    
+
         bytes32 requestHash = keccak256(
             abi.encodePacked(validatorPubkey, blockNumber, txId)
         );
@@ -293,8 +299,7 @@ contract SymbioticRestaking is
         emit TransactionVerified(
             validatorPubkey,
             blockNumber,
-            txId,
-            isIncluded
+            txId
         );
     }
 
@@ -311,9 +316,6 @@ contract SymbioticRestaking is
 
         // Get stored request
         SlashRequest storage request = slashRequests[requestHash];
-
-        // Verify request exists
-        require(request.blockNumber != 0, "Request not found");
 
         // Check if already verified
         require(!request.verified, "Already verified");

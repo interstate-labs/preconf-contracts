@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {IDSS} from "./karak/src/interfaces/IDSS.sol";
-import {ICore} from "./karak/src/interfaces/ICore.sol";
-import {Operator} from "./karak/src/entities/Operator.sol";
+import {IDSS} from "@karak/src/interfaces/IDSS.sol";
+import {ICore} from "@karak/src/interfaces/ICore.sol";
+import {Operator} from "@karak/src/entities/Operator.sol";
 
 
 

@@ -89,7 +89,7 @@ function initialize(
     }
   
   
-      function registerOperator(
+        function registerOperator(
         string calldata rpc,
          string calldata rpc1,
           string calldata rpc2,

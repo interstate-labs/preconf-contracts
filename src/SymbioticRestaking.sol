@@ -54,12 +54,26 @@ contract SymbioticRestaking is
 
     uint256[38] private __gap;
 
-
+    event TransactionVerified(
+        bytes indexed validatorPubkey,
+        uint256 indexed blockNumber,
+        bytes32 indexed txId,
+        bool included
+    );
 
     error NotVault();
     error SlashAmountTooHigh();
     error UnknownSlasherType();
     error OperatorNotOptedIn();
+
+    struct SlashRequest {
+        bytes validatorPubkey;
+        uint256 blockNumber;
+        bytes32 txId;
+        bool verified;
+    }
+
+    mapping(bytes32 => SlashRequest) public slashRequests;
 
     function initialize(
         address _owner,
@@ -127,7 +141,6 @@ contract SymbioticRestaking is
     }
 
     function registerOperator(string calldata rpc) public {
-        
         // if (manager.isOperator(msg.sender)) {
         //     revert AlreadyRegistered();
         // }
@@ -152,7 +165,6 @@ contract SymbioticRestaking is
         // if (!manager.isOperator(msg.sender)) {
         //     revert NotRegistered();
         // }
-
         // manager.deregisterOperator(msg.sender);
     }
 
@@ -217,7 +229,7 @@ contract SymbioticRestaking is
         return (collateralTokens, amounts);
     }
 
-    function  getProviderCollateral(
+    function getProviderCollateral(
         address operator,
         address collateral
     ) public view returns (uint256 amount) {
@@ -259,51 +271,81 @@ contract SymbioticRestaking is
     }
 
     function slash(
-        uint48 timestamp,
-        address operator,
-        address collateral,
-        uint256 amount
-    ) public onlyOwner {
-        uint48 epochStartTs = getPeriodStartTime(getPeriodAtTime(timestamp));
+        bytes calldata validatorPubkey,
+        uint256 blockNumber,
+        bytes32 txId,
+        bool isIncluded
+    ) external onlyOwner {
+        bytes32 requestHash = keccak256(
+            abi.encodePacked(validatorPubkey, blockNumber, txId)
+        );
 
-        for (uint256 i = 0; i < vaults.length(); ++i) {
-            (address vault, uint48 enabledTime, uint48 disabledTime) = vaults
-                .atWithTimes(i);
+        SlashRequest storage request = slashRequests[requestHash];
+        require(!request.verified, "Already verified");
 
-            if (!_wasEnabledAt(enabledTime, disabledTime, epochStartTs)) {
-                continue;
-            }
+        slashRequests[requestHash] = SlashRequest({
+            validatorPubkey: validatorPubkey,
+            blockNumber: blockNumber,
+            txId: txId,
+            verified: false // Initialize as not verified
+        });
 
-            if (collateral != IVault(vault).collateral()) {
-                continue;
-            }
+        emit TransactionVerified(
+            validatorPubkey,
+            blockNumber,
+            txId,
+            isIncluded
+        );
+    }
 
-            uint256 operatorStake = getOperatorStakeAt(
-                operator,
-                collateral,
-                epochStartTs
-            );
+    function verified_txn(
+        bool result,
+        bytes calldata validatorPubkey,
+        uint256 blockNumber,
+        bytes32 txId
+    ) external onlyOwner {
+        // Generate request hash for lookup
+        bytes32 requestHash = keccak256(
+            abi.encodePacked(validatorPubkey, blockNumber, txId)
+        );
 
-            if (amount > operatorStake) {
-                revert SlashAmountTooHigh();
-            }
+        // Get stored request
+        SlashRequest storage request = slashRequests[requestHash];
 
-            uint256 vaultStake = IBaseDelegator(IVault(vault).delegator())
-                .stakeAt(
-                    SYMBIOTIC_NETWORK.subnetwork(0),
-                    operator,
-                    epochStartTs,
-                    new bytes(0)
-                );
+        // Verify request exists
+        require(request.blockNumber != 0, "Request not found");
 
-            // Slash the vault pro-rata.
-            _slashVault(
-                epochStartTs,
-                vault,
-                operator,
-                (amount * vaultStake) / operatorStake
-            );
-        }
+        // Check if already verified
+        require(!request.verified, "Already verified");
+
+        // Update verification status
+        request.verified = result;
+    }
+
+    function get_validator_response(
+        bytes calldata validatorPubkey,
+        uint256 blockNumber,
+        bytes32 txId
+    ) public view returns (bool verified) {
+        // Generate request hash for lookup
+        bytes32 requestHash = keccak256(
+            abi.encodePacked(validatorPubkey, blockNumber, txId)
+        );
+
+        // Get stored request
+        SlashRequest storage request = slashRequests[requestHash];
+
+        // Return verification status
+        return request.verified;
+    }
+
+  
+
+    function getValidatorAddress(
+        bytes memory pubkey
+    ) internal pure returns (address) {
+        require(pubkey.length == 64, "Invalid pubkey length");
+        return address(uint160(uint256(keccak256(pubkey))));
     }
 
     function _wasEnabledAt(

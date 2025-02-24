@@ -1,0 +1,49 @@
+services:
+    anvil:
+        image: ghcr.io/foundry-rs/foundry:nightly
+        platform: linux/amd64
+        ports:
+            - "8545:8545"
+        volumes:
+            - ./:/dss
+        environment:
+            - ANVIL_IP_ADDR=0.0.0.0
+        working_dir: /dss/contracts
+        command: anvil --no-cors
+
+    contract-builder:
+        image: node:22.5-slim
+        platform: linux/amd64
+        volumes:
+            - ./:/dss
+        working_dir: /dss/contracts
+        entrypoint:
+            - /bin/sh
+            - -c
+            - |
+              sleep 3 &&
+              yarn &&
+              echo "success" > /dss/builder.status
+
+    contract-deployer:
+        image: ghcr.io/foundry-rs/foundry:nightly
+        platform: linux/amd64
+        user: root 
+        volumes:
+            - ./:/dss
+        working_dir: /dss/contracts
+        entrypoint:
+            - /bin/sh
+            - -c
+            - |
+              rm -f /dss/deploy.status &&
+              while [ ! -f /dss/builder.status ] || [ $(cat /dss/builder.status) != 'success' ]; do
+              echo 'Waiting for contract-builder to complete...';
+              sleep 2;
+              done &&
+              forge script script/deploy.sol --rpc-url https://ethereum-holesky-rpc.publicnode.com --private-key 02173fab1568a8134388dcf6745bf3a650c8cb9ef4b3ffe56cdd2f6e6f34eb52 --broadcast --skip-simulation &&
+              rm /dss/builder.status &&
+              echo "success" > /dss/deploy.status
+
+  
+  

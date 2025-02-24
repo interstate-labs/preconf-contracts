@@ -19,5 +19,6 @@ remappings = [
   "@eigenlayer-middleware/=lib/eigenlayer-middleware/",
   "forge-std/=lib/forge-std/src/",
   "solady/=node_modules/solady/",
-  "@openzeppelin-upgradeable/=node_modules/@openzeppelin/contracts-upgradeable/"
+  "@openzeppelin-upgradeable/=node_modules/@openzeppelin/contracts-upgradeable/",
+  "@karak/=lib/karak/"
   ]

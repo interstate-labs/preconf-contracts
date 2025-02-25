@@ -141,41 +141,6 @@ contract SymbioticRestaking is
         vaults.remove(vault);
     }
 
-    function registerOperator(string calldata rpc) public {
-        // if (manager.isOperator(msg.sender)) {
-        //     revert AlreadyRegistered();
-        // }
-
-        if (!IRegistry(OPERATOR_REGISTRY).isEntity(msg.sender)) {
-            revert NotOperator();
-        }
-
-        if (
-            !IOptInService(OPERATOR_NET_OPTIN).isOptedIn(
-                msg.sender,
-                SYMBIOTIC_NETWORK
-            )
-        ) {
-            revert OperatorNotOptedIn();
-        }
-
-        // manager.registerOperator(msg.sender, rpc);
-    }
-
-    function deregisterOperator() public {
-        // if (!manager.isOperator(msg.sender)) {
-        //     revert NotRegistered();
-        // }
-        // manager.deregisterOperator(msg.sender);
-    }
-
-    // function pauseOperator() public {
-    //     manager.pauseOperator(msg.sender);
-    // }
-
-    // function unpauseOperator() public {
-    //     manager.unpauseOperator(msg.sender);
-    // }
 
     function pauseVault() public {
         if (!vaults.contains(msg.sender)) {
@@ -293,7 +258,7 @@ contract SymbioticRestaking is
             validatorPubkey: validatorPubkey,
             blockNumber: blockNumber,
             txId: txId,
-            verified: false // Initialize as not verified
+            verified: false 
         });
 
         emit TransactionVerified(

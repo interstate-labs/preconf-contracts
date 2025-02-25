@@ -20,8 +20,6 @@ import {IConsensusRestaking} from "./interfaces/IRestaking.sol";
 import {IParameters} from "./interfaces/IParameters.sol";
 import {MapWithTimeData} from "./library/MapWithTimeData.sol";
 
-
-
 contract SymbioticRestaking is
     IConsensusRestaking,
     OwnableUpgradeable,
@@ -31,6 +29,17 @@ contract SymbioticRestaking is
     using EnumerableMap for EnumerableMap.AddressToUintMap;
     using MapWithTimeData for EnumerableMap.AddressToUintMap;
     using Subnetwork for address;
+
+    struct Operator {
+        string rpc;
+        uint256 registrationTime;
+        bool active;
+    }
+
+    // Map to store operator data
+    EnumerableMap.AddressToUintMap private operators;
+
+    mapping(address => Operator) private operatorData;
 
     uint256 public INSTANT_SLASHER_TYPE = 0;
 
@@ -61,11 +70,12 @@ contract SymbioticRestaking is
         uint256 indexed blockNumber,
         bytes32 indexed txId
     );
-
+    event OperatorRegistered(address indexed operator, string rpc);
     error NotVault();
     error SlashAmountTooHigh();
     error UnknownSlasherType();
     error OperatorNotOptedIn();
+    error OperatorAlreadyRegistered();
 
     struct SlashRequest {
         string validatorPubkey;
@@ -141,6 +151,44 @@ contract SymbioticRestaking is
         vaults.remove(vault);
     }
 
+    function registerOperator(
+        address operatorAddr,
+        string calldata rpc
+    ) external onlyOwner {
+        if (operators.contains(operatorAddr)) {
+            revert OperatorAlreadyRegistered();
+        }
+
+        // Check if operator is opted into the network via Symbiotic
+        bool isOptedIn = IOptInService(OPERATOR_NET_OPTIN).isOptedIn(
+            operatorAddr,
+            SYMBIOTIC_NETWORK
+        );
+        if (!isOptedIn) {
+            revert OperatorNotOptedIn();
+        }
+
+        // Check if operator is registered in Symbiotic registry
+        bool isRegistered = IRegistry(OPERATOR_REGISTRY).isEntity(operatorAddr);
+        if (!isRegistered) {
+            revert NotRegistered();
+        }
+
+        // Create and store operator data
+        Operator memory operator = Operator({
+            rpc: rpc,
+            registrationTime: Time.timestamp(),
+            active: true
+        });
+
+        // Add to operators map with a default value (could be registration timestamp)
+        operators.set(operatorAddr, Time.timestamp());
+
+        // Store detailed operator data
+        operatorData[operatorAddr] = operator;
+
+        emit OperatorRegistered(operatorAddr, rpc);
+    }
 
     function pauseVault() public {
         if (!vaults.contains(msg.sender)) {
@@ -241,11 +289,8 @@ contract SymbioticRestaking is
         uint256 blockNumber,
         bytes32 txId
     ) external onlyOwner {
-
-    require(blockNumber > 0, "Invalid block number");
-    require(txId != bytes32(0), "Invalid transaction ID");
-
-    
+        require(blockNumber > 0, "Invalid block number");
+        require(txId != bytes32(0), "Invalid transaction ID");
 
         bytes32 requestHash = keccak256(
             abi.encodePacked(validatorPubkey, blockNumber, txId)
@@ -258,14 +303,10 @@ contract SymbioticRestaking is
             validatorPubkey: validatorPubkey,
             blockNumber: blockNumber,
             txId: txId,
-            verified: false 
+            verified: false
         });
 
-        emit TransactionVerified(
-            validatorPubkey,
-            blockNumber,
-            txId
-        );
+        emit TransactionVerified(validatorPubkey, blockNumber, txId);
     }
 
     function verified_txn(
@@ -305,8 +346,6 @@ contract SymbioticRestaking is
         // Return verification status
         return request.verified;
     }
-
-  
 
     function getValidatorAddress(
         bytes memory pubkey

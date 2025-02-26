@@ -6,7 +6,7 @@ import {ERC1967Factory} from "solady/src/utils/ERC1967Factory.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 
-import  {TxnVerifier} from "../src/TxnVerifier.sol";
+import  {TxnVerifier} from "../src/KarakRestaking/KarakRestaking.sol";
 
 
 import {Core} from "@karak/src/Core.sol";

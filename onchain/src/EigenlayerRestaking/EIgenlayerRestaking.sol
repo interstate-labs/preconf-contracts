@@ -18,9 +18,9 @@ import {ISignatureUtils} from "@eigenlayer/src/contracts/interfaces/ISignatureUt
 import {IStrategy} from "@eigenlayer/src/contracts/interfaces/IStrategy.sol";
 import {AVSDirectoryStorage} from "@eigenlayer/src/contracts/core/AVSDirectoryStorage.sol";
 
-import "./RestakingHelper.sol";
+import "./EigenlayerRestakingHelper.sol";
 
-contract Restaking is IConsensusRestaking, UUPSUpgradeable, OwnableUpgradeable {
+contract EIgenlayerRestaking is IConsensusRestaking, UUPSUpgradeable, OwnableUpgradeable {
     using OEnumerableMap for OEnumerableMap.AddressToUintMap;
     using MapWithTimeData for OEnumerableMap.AddressToUintMap;
 

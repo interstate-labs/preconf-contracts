@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity 0.8.25;
 
 import {Time} from "@openzeppelin/contracts/utils/types/Time.sol";
@@ -16,9 +17,9 @@ import {ISlasher} from "@symbiotic/interfaces/slasher/ISlasher.sol";
 import {IVetoSlasher} from "@symbiotic/interfaces/slasher/IVetoSlasher.sol";
 import {IEntity} from "@symbiotic/interfaces/common/IEntity.sol";
 
-import {IConsensusRestaking} from "./interfaces/IRestaking.sol";
-import {IParameters} from "./interfaces/IParameters.sol";
-import {MapWithTimeData} from "./library/MapWithTimeData.sol";
+import {IConsensusRestaking} from "../interfaces/IRestaking.sol";
+import {IParameters} from "../interfaces/IParameters.sol";
+import {MapWithTimeData} from "../library/MapWithTimeData.sol";
 
 contract SymbioticRestaking is
     IConsensusRestaking,
@@ -49,7 +50,7 @@ contract SymbioticRestaking is
 
     IParameters public parameters;
 
-    IConsensusRestaking public manager;
+
 
     EnumerableMap.AddressToUintMap private vaults;
 
@@ -89,7 +90,6 @@ contract SymbioticRestaking is
     function initialize(
         address _owner,
         address _parameters,
-        address _manager,
         address _symbioticNetwork,
         address _symbioticOperatorRegistry,
         address _symbioticOperatorNetOptIn,
@@ -97,7 +97,6 @@ contract SymbioticRestaking is
     ) public reinitializer(2) {
         __Ownable_init(_owner);
         parameters = IParameters(_parameters);
-        manager = IConsensusRestaking(_manager);
         START_TIMESTAMP = Time.timestamp();
 
         SYMBIOTIC_NETWORK = _symbioticNetwork;

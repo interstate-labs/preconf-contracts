@@ -4,6 +4,9 @@ out/
 
 node_modules
 /node_modules/
+target
+/target/
+
 
 # Ignores development broadcast logs
 !/broadcast

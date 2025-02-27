@@ -1,0 +1,1 @@
+symbiotic_restaking::SymbioticRestaking<ethers::ethers_providers::Provider<ethers::ethers_providers::Http>>

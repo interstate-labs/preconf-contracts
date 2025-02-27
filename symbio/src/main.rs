@@ -1,14 +1,20 @@
 mod abi;
 mod event_fetcher;
 
+use abi::SymbioticRestaking;
 use event_fetcher::EventFetcher;
 use symbio::SymbioticClient;
+use ethers::{
+    prelude::*,
+    providers::{Provider, Http},
+
+};
 
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 use ethers::types::{Address, H256};
 
-use std::str::FromStr;
+use std::{str::FromStr, sync::Arc};
 
 #[derive(Parser)]
 #[command(name = "Symbiotic Restaking CLI")]
@@ -104,7 +110,7 @@ async fn main() -> Result<()> {
         } => {
             let response = client
                 .get_validator_response(
-                    validator_pubkey.into_bytes(),
+                    validator_pubkey,
                     block_number,
                     H256::from_str(&tx_id)?,
                 )
@@ -129,13 +135,27 @@ async fn main() -> Result<()> {
         }
 
         Commands::FetchEvents => {
-            let contract_address = dotenv::var("CONTRACT_ADDRESS")?.parse()?;
-            let rpc_url = dotenv::var("ETHEREUM_RPC_URL")?;
+            // let contract_address = dotenv::var("CONTRACT_ADDRESS")?.parse()?;
+            let contract_address = Address::from_str(&std::env::var("CONTRACT_ADDRESS")?)?;
+    
+            // let rpc_url = dotenv::var("ETHEREUM_RPC_URL")?;
+            let rpc_url = std::env::var("ETHEREUM_RPC_URL")?;
+            let provider = Provider::<Http>::try_from(rpc_url.clone())?;
+    
             println!("rpc_url {} contract_address{} ",rpc_url,contract_address);
+            let private_key = std::env::var("PRIVATE_KEY")?;
+            let chain_id: u64 = 11155111; 
+            let wallet: LocalWallet = private_key.parse::<LocalWallet>()?.with_chain_id(chain_id);
+    
+
+            let client = SignerMiddleware::new(provider, wallet);
+
+            let contract = SymbioticRestaking::new(contract_address, Arc::new(client));
+
 
 
             let event_fetcher = EventFetcher::new(&rpc_url, contract_address)?;
-            event_fetcher.start_continuous_fetching().await?;
+            event_fetcher.start_continuous_fetching(&contract,&rpc_url).await?;
         }
     }
 

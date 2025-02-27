@@ -21,6 +21,7 @@ import {IConsensusRestaking} from "../interfaces/IRestaking.sol";
 import {IParameters} from "../interfaces/IParameters.sol";
 import {MapWithTimeData} from "../library/MapWithTimeData.sol";
 
+
 contract SymbioticRestaking is
     IConsensusRestaking,
     OwnableUpgradeable,
@@ -310,7 +311,7 @@ contract SymbioticRestaking is
 
     function verified_txn(
         bool result,
-        bytes calldata validatorPubkey,
+        string calldata validatorPubkey,
         uint256 blockNumber,
         bytes32 txId
     ) external onlyOwner {
@@ -330,9 +331,9 @@ contract SymbioticRestaking is
     }
 
     function get_validator_response(
-        bytes calldata validatorPubkey,
+        string calldata validatorPubkey,
         uint256 blockNumber,
-        bytes32 txId
+        bytes32  txId
     ) public view returns (bool verified) {
         // Generate request hash for lookup
         bytes32 requestHash = keccak256(

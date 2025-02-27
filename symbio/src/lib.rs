@@ -104,12 +104,12 @@ pub async fn initialize(
     // Check validator response
     pub async fn get_validator_response(
         &self,
-        validator_pubkey: Vec<u8>,
+        validator_pubkey: String,
         block_number: u64,
         tx_id: H256,
     ) -> Result<bool> {
         Ok(self.contract
-            .get_validator_response(validator_pubkey.into(), block_number.into(), tx_id.into())
+            .get_validator_response(validator_pubkey, block_number.into(), tx_id.into())
             .call()
             .await?)
     }

@@ -564,9 +564,9 @@
 	{
 		"inputs": [
 			{
-				"internalType": "bytes",
+				"internalType": "string",
 				"name": "validatorPubkey",
-				"type": "bytes"
+				"type": "string"
 			},
 			{
 				"internalType": "uint256",
@@ -574,9 +574,9 @@
 				"type": "uint256"
 			},
 			{
-				"internalType": "bytes32",
+				"internalType": "string",
 				"name": "txId",
-				"type": "bytes32"
+				"type": "string"
 			}
 		],
 		"name": "get_validator_response",
@@ -834,9 +834,9 @@
 				"type": "bool"
 			},
 			{
-				"internalType": "bytes",
+				"internalType": "string",
 				"name": "validatorPubkey",
-				"type": "bytes"
+				"type": "string"
 			},
 			{
 				"internalType": "uint256",

@@ -9,14 +9,11 @@ use alloy::{
     primitives::{Address, Uint, U256},
     providers::Provider,
     rpc::types::{BlockNumberOrTag, Filter},
-    signers::Signature,
     sol_types::SolEvent,
     transports::http::Client,
 };
 use chrono::{DateTime, Utc};
 use eyre::Result;
-// use crate::task::TxnVerifier::OperatorResponse;
-use crate::task::SquareNumberDSS::TaskResponse;
 use serde::{Deserialize, Serialize};
 use tokio::{
     signal,
@@ -27,7 +24,7 @@ use url::Url;
 
 use crate::{
     aggregator::{Operator, OperatorState},
-    contract::{ContractManager, SquareNumberDSS, VaultContract,TxnVerifier},
+    contract::{ContractManager, VaultContract,TxnVerifier},
     Config, TaskError,
 };
 

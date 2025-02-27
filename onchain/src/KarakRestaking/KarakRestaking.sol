@@ -23,6 +23,7 @@ contract TxnVerifier is IDSS {
     mapping(bytes32 => bool) public taskCompleted;
     // Aggregator address
     address public aggregator;
+    address public owner;
     ICore core;
     
 
@@ -53,14 +54,26 @@ contract TxnVerifier is IDSS {
         _;
     }
 
-        modifier senderIsOperator(address operator) {
+     modifier senderIsOperator(address operator) {
         if (tx.origin != operator) revert SenderNotOperator();
         _;
     }
+
+       modifier onlyCore() {
+        require(msg.sender == address(core), "Not Core");
+        _;
+    }
+
+    modifier onlyOwner(){
+            require(msg.sender == address(owner), "Not Owner");
+        _;
+
+    }
     
-    constructor(address _aggregator, ICore _core) {
+    constructor(address _aggregator, ICore _core,address _owner) {
         aggregator = _aggregator;
         core = _core;
+        owner=_owner
     }
     
     /* ======= External Functions ======= */
@@ -137,11 +150,11 @@ contract TxnVerifier is IDSS {
             interfaceID == IDSS.unregistrationHook.selector);
     }
     
-    function registerToCore(uint256 slashablePercentage) external {
+    function registerToCore(uint256 slashablePercentage) onlyOwner external {
         core.registerDSS(slashablePercentage);
     }
     
-  function registrationHook(address operator, bytes memory extraData) external senderIsOperator(operator) {
+  function registrationHook(address operator, bytes memory extraData) external  onlyCore senderIsOperator(operator) {
         extraData = extraData;
         if (operatorExists[operator]) revert OperatorAlreadyRegistered();
         operatorAddresses.push(operator);
@@ -150,14 +163,19 @@ contract TxnVerifier is IDSS {
 
 
     
-    function unregistrationHook(address operator, bytes memory extraData) external senderIsOperator(operator) {
-        uint256 index = abi.decode(extraData, (uint256));
-        if (operator != operatorAddresses[index]) revert OperatorAndIndexDontMatch();
-        if (!operatorExists[operator]) revert OperatorIsNotRegistered();
-        uint256 operatorAddressesLength = operatorAddresses.length;
-        operatorAddresses[index] = operatorAddresses[operatorAddressesLength - 1];
-        operatorAddresses.pop();
-        operatorExists[operator] = false;
+    function unregistrationHook(address operator) external onlyCore senderIsOperator(operator) {
+    uint256 operatorAddressesLength = operatorAddresses.length;
+    for (uint256 i = 0; i < operatorAddressesLength; i++) {
+        if (operatorAddresses[i] == operator) {
+            // Swap and pop pattern to remove the operator
+            operatorAddresses[i] = operatorAddresses[operatorAddressesLength - 1];
+            operatorAddresses.pop();
+            break;
+        }
+    }
+    
+    // Update the mapping regardless of whether operator was found
+    operatorExists[operator] = false;
     }
 
     

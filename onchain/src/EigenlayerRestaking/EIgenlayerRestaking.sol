@@ -35,7 +35,7 @@ function initialize(
         address _eigenlayerAVSDirectory,
         address _eigenlayerDelegationManager,
         address _eigenlayerStrategyManager,
-        address _restakingHelper
+        address _eigenlayerStrategyManager
     ) public initializer {
         __Ownable_init(_owner);
 
@@ -291,5 +291,11 @@ function initialize(
  
        restakingHelper.deregisterOperatorFromAVS(operator);
  }
+
+
+
+
+
+ 
 
 }
